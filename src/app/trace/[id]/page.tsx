@@ -17,6 +17,7 @@ const eventIcons: Record<string, React.ReactNode> = {
 };
 
 export default function TracePage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const [trace, setTrace] = useState<any>(null);
   const [crop, setCrop] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +88,6 @@ export default function TracePage({ params }: { params: { id: string } }) {
     );
   }
 
-  const router = useRouter();
   const events: any[] = trace?.events ?? [];
 
   const handlePrint = () => {
@@ -106,17 +106,27 @@ export default function TracePage({ params }: { params: { id: string } }) {
       <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-emerald-400/5 blur-[120px] rounded-full pointer-events-none print:hidden" />
 
       <div className="max-w-3xl mx-auto relative z-10 print:max-w-full">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12 print:hidden relative">
+              <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12 print:hidden relative px-4 sm:px-0">
           <button 
             onClick={() => router.back()}
-            className="absolute left-0 top-0 mt-4 flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors group"
+            className="hidden sm:flex absolute left-0 top-0 mt-4 items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors group"
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             Back
           </button>
 
-          <Link href="/" className="inline-flex items-center gap-3 mb-8 group">
+          <div className="sm:hidden flex items-center justify-between mb-8">
+            <button onClick={() => router.back()} className="p-2 rounded-full bg-secondary text-foreground">
+               <ArrowLeft size={20} />
+            </button>
+            <div className="flex items-center gap-2">
+               <TrendingUp size={20} className="text-primary" />
+               <span className="text-lg font-black tracking-tighter">AgriOx</span>
+            </div>
+            <div className="w-10" />
+          </div>
+
+          <Link href="/" className="hidden sm:inline-flex items-center gap-3 mb-8 group">
             <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
               <TrendingUp size={24} className="text-white" strokeWidth={2.5} />
             </div>
@@ -125,8 +135,8 @@ export default function TracePage({ params }: { params: { id: string } }) {
               <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Value Chain Logic</p>
             </div>
           </Link>
-          <h1 className="text-4xl font-black text-foreground font-display tracking-tight mb-3">Product Traceability</h1>
-          <p className="text-muted-foreground/80 font-semibold uppercase tracking-widest text-xs">Immutable Supply Chain Journey</p>
+          <h1 className="text-3xl sm:text-4xl font-black text-foreground font-display tracking-tight mb-3">Product Traceability</h1>
+          <p className="text-muted-foreground/80 font-semibold uppercase tracking-widest text-[10px] sm:text-xs">Immutable Supply Chain Journey</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 print:block">

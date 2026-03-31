@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Header } from './Header';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -10,7 +10,7 @@ import type { Role } from '@/lib/types';
 import { 
   Sprout, Package, Handshake, ShoppingBag, 
   Users, ListFilter, Factory, ClipboardList, Leaf, MoreHorizontal,
-  PlusSquare, Store, Home, Settings, HelpCircle, TrendingUp, QrCode
+  PlusSquare, Store, Home, Settings, HelpCircle, TrendingUp, QrCode, Menu, X
 } from 'lucide-react';
 
 const farmerLinks = [
@@ -54,6 +54,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, allowedRoles }: DashboardLayoutProps) {
   const { user, profile, loading } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -153,29 +154,85 @@ export default function DashboardLayout({ children, allowedRoles }: DashboardLay
       </div>
 
       {/* Mobile Bottom Navigation (Fixed Bottom) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white/95 backdrop-blur-md px-2 py-2 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-white/95 backdrop-blur-md px-2 py-2 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         <div className="flex items-center justify-around">
           {mobileLinks.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href || pathname.startsWith(href + '/');
             return (
-              <Link key={href} href={href} className="flex flex-col items-center gap-1 group w-16">
-                <div className={`p-1.5 rounded-md transition-all ${isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground group-hover:bg-secondary'}`}>
+              <Link key={href} href={href} className="flex flex-col items-center gap-1 group w-14">
+                <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110' : 'text-muted-foreground group-hover:bg-secondary'}`}>
                   <Icon size={18} />
                 </div>
-                <span className={`text-[10px] font-semibold tracking-tight ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>{label}</span>
+                <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>{label}</span>
               </Link>
             );
           })}
           
-          {/* More Drawer Trigger */}
-          <button className="flex flex-col items-center gap-1 group w-16 text-muted-foreground hover:text-foreground">
-            <div className="p-1.5 rounded-md transition-all group-hover:bg-secondary">
+          <button 
+            onClick={() => setMobileMenuOpen(true)}
+            className="flex flex-col items-center gap-1 group w-14 text-muted-foreground hover:text-foreground"
+          >
+            <div className="p-1.5 rounded-xl transition-all group-hover:bg-secondary">
               <MoreHorizontal size={18} />
             </div>
-            <span className="text-[10px] font-semibold tracking-tight">More</span>
+            <span className="text-[10px] font-bold tracking-tight">More</span>
           </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Drawer Overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 pt-20"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="md:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 pb-12 pt-8 px-6 shadow-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-xl font-black text-foreground tracking-tight">System Navigation</h3>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-full bg-secondary text-muted-foreground">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 h-[50vh] overflow-y-auto pb-10">
+                {links.map(({ href, label, icon: Icon }) => (
+                  <Link 
+                    key={href} 
+                    href={href} 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex flex-col items-center justify-center p-4 rounded-2xl border border-border bg-secondary/20 hover:bg-white hover:border-primary/50 transition-all transition-all"
+                  >
+                    <Icon size={24} className="text-primary mb-3" />
+                    <span className="text-xs font-bold text-foreground text-center">{label}</span>
+                  </Link>
+                ))}
+                
+                <div className="col-span-2 h-px bg-border my-2" />
+                
+                <Link href={`/${role}/dashboard`} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 p-4 rounded-2xl bg-secondary/40">
+                  <Settings size={20} className="text-muted-foreground" />
+                  <span className="text-sm font-bold text-foreground">Settings</span>
+                </Link>
+                <Link href="#" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 p-4 rounded-2xl bg-secondary/40">
+                  <HelpCircle size={20} className="text-muted-foreground" />
+                  <span className="text-sm font-bold text-foreground">Help Center</span>
+                </Link>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,7 +16,7 @@ export default function FarmerOffersPage() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!profile) return;
     try {
       const data = await offerService.getForFarmer(profile.id);
@@ -26,9 +26,9 @@ export default function FarmerOffersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile]);
 
-  useEffect(() => { load(); }, [profile]);
+  useEffect(() => { load(); }, [load]);
 
   const handleAction = async (offer: any, action: 'accepted' | 'rejected') => {
     setProcessing(offer.id);
@@ -139,8 +139,8 @@ export default function FarmerOffersPage() {
                             </div>
 
                             <div className="flex flex-col sm:items-end gap-4 shrink-0 px-2 sm:px-0 border-t sm:border-0 border-border pt-4 sm:pt-0">
-                              <div className="sm:text-right">
-                                <p className="font-bold text-foreground text-lg">₹{offer.offer_price}<span className="text-sm font-medium text-muted-foreground">/kg</span></p>
+                              <div className="sm:text-right pt-4 sm:pt-0">
+                                <p className="font-bold text-foreground text-xl sm:text-lg">₹{offer.offer_price}<span className="text-sm font-medium text-muted-foreground">/kg</span></p>
                                 <p className="text-xs font-semibold text-muted-foreground mt-0.5">
                                   Total: ₹{(offer.offer_price * offer.quantity).toLocaleString('en-IN')}
                                 </p>
@@ -155,18 +155,18 @@ export default function FarmerOffersPage() {
                                 )}
                               </div>
                               
-                              <div className="flex items-center gap-2 mt-2 w-full sm:w-auto">
+                              <div className="flex flex-col sm:flex-row items-center gap-2 mt-2 w-full sm:w-auto">
                                 <button
                                   onClick={() => handleAction(offer, 'rejected')}
                                   disabled={processing === offer.id}
-                                  className="flex-1 sm:flex-none px-4 py-2 border border-border bg-white text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:border-red-200 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                                  className="w-full sm:w-none px-4 py-3 sm:py-2 border border-border bg-white text-muted-foreground rounded-xl sm:rounded-lg text-sm font-medium flex items-center justify-center gap-1.5"
                                 >
                                   <X size={16} /> Reject
                                 </button>
                                 <button
                                   onClick={() => handleAction(offer, 'accepted')}
                                   disabled={processing === offer.id}
-                                  className="flex-auto sm:flex-none px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"
+                                  className="w-full sm:w-none px-6 py-3 sm:py-2 bg-primary text-white rounded-xl sm:rounded-lg text-sm font-bold sm:font-semibold flex items-center justify-center gap-1.5"
                                 >
                                   <Check size={16} /> Accept Offer
                                 </button>

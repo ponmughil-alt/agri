@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,7 +16,7 @@ export default function MyCropsPage() {
   const [crops, setCrops] = useState<Crop[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!profile) return;
     try {
       const data = await cropService.getByFarmer(profile.id);
@@ -26,9 +26,9 @@ export default function MyCropsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile]);
 
-  useEffect(() => { load(); }, [profile]);
+  useEffect(() => { load(); }, [load]);
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to remove "${name}" from your inventory?`)) return;
@@ -84,7 +84,7 @@ export default function MyCropsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="premium-card bg-white border border-border rounded-xl shadow-sm overflow-hidden"
           >
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-border bg-secondary/40">
@@ -152,6 +152,60 @@ export default function MyCropsPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-border">
+              {crops.map((crop) => (
+                <div key={crop.id} className="p-5 flex flex-col gap-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0">
+                        <Sprout size={18} className="text-emerald-700" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground leading-tight">{crop.name}</h4>
+                        <p className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground mt-0.5">{crop.quality}</p>
+                      </div>
+                    </div>
+                    {getStatusBadge(crop.status)}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-2 py-4 border-y border-border/50">
+                    <div>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available</p>
+                      <p className="text-sm font-bold text-foreground">{crop.quantity.toLocaleString('en-IN')} {crop.unit}s</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Unit Price</p>
+                      <p className="text-sm font-bold text-foreground">₹{crop.price_per_unit}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Location</p>
+                      <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><MapPin size={10} /> {crop.location}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Value</p>
+                      <p className="text-sm font-black text-primary">₹{(crop.price_per_unit * crop.quantity).toLocaleString('en-IN')}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/trace/${crop.id}`}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20"
+                    >
+                      <QrCode size={14} /> View Cargo Tag
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(crop.id, crop.name)}
+                      className="w-12 h-11 flex items-center justify-center rounded-xl border border-border text-red-500 bg-red-50/50"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
             
             <div className="px-5 py-3 border-t border-border bg-secondary/20 flex items-center justify-between text-xs text-muted-foreground">

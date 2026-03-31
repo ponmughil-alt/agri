@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,14 +22,14 @@ export default function ProcessorRequestsPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!profile) return;
     const data = await processingService.getByProcessor(profile.id);
     setRequests(data || []);
     setLoading(false);
-  };
+  }, [profile]);
 
-  useEffect(() => { load(); }, [profile]);
+  useEffect(() => { load(); }, [load]);
 
   return (
     <DashboardLayout allowedRoles={['processor']}>
